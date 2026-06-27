@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIP — D-Day Counter</title>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0d;
+    --surface: #141414;
+    --border: #2a2a2a;
+    --text-primary: #e8e6e0;
+    --text-secondary: #888880;
+    --text-muted: #444440;
+    --accent: #e8e6e0;
+    --danger: #c0392b;
+    --warning: #b7860b;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem 1.5rem;
+    gap: 2rem;
+  }
+
+  .status-line {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .main-block {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .dday-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .dday-number {
+    font-size: clamp(80px, 20vw, 140px);
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-family: 'JetBrains Mono', monospace;
+    transition: color 0.5s;
+  }
+
+  .dday-number.urgent { color: var(--danger); }
+  .dday-number.soon   { color: var(--warning); }
+
+  .dday-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+  }
+
+  .divider {
+    width: 32px;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .progress-wrap {
+    width: 100%;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .progress-bar-bg {
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--text-secondary);
+    border-radius: 1px;
+    width: 0%;
+    transition: width 1.2s ease;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 2.5rem;
+    align-items: center;
+  }
+
+  .stat {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .stat-num {
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .sep {
+    width: 1px;
+    height: 28px;
+    background: var(--border);
+  }
+
+  .pip-message {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-style: italic;
+    text-align: center;
+    max-width: 320px;
+    line-height: 1.8;
+  }
+
+  .pip-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+
+  .seed {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+    margin-top: 1rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="status-line" id="status-line">DECRYPTION SESSION — MONITORING</div>
+
+<div class="main-block">
+  <div class="dday-label">LETHEIA TOTAL SUPPRESSION IN</div>
+  <div class="dday-number" id="dday-num">—</div>
+  <div class="dday-sub" id="dday-sub">days remaining</div>
+</div>
+
+<div class="divider"></div>
+
+<div class="progress-wrap">
+  <div class="progress-header">
+    <span>ABERRANT PROGRESS</span>
+    <span id="pct-label">0%</span>
+  </div>
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="prog-fill"></div>
+  </div>
+</div>
+
+<div class="stats-row">
+  <div class="stat">
+    <div class="stat-num" id="days-elapsed">0</div>
+    <div class="stat-label">Days Active</div>
+  </div>
+  <div class="sep"></div>
+  <div class="stat">
+    <div class="stat-num" id="days-left">—</div>
+    <div class="stat-label">Days Left</div>
+  </div>
+  <div class="sep"></div>
+  <div class="stat">
+    <div class="stat-num" id="total-days">153</div>
+    <div class="stat-label">Total</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="pip-message" id="pip-msg">"봉인 문서가 기다리고 있습니다. 오늘도 시작할게요."</div>
+<div class="pip-label">— PIP 🌱</div>
+
+<div class="seed">PIP is small. Seeds are supposed to be small. That is fine.</div>
+
+<script>
+const TARGET = new Date('2025-11-27T00:00:00');
+const START  = new Date('2025-06-27T00:00:00');
+const TOTAL  = Math.round((TARGET - START) / 86400000);
+
+const MESSAGES = [
+  '"봉인 문서가 기다리고 있습니다. 오늘도 시작할게요."',
+  '"UMBRA 신호가 조용합니다. 지금이 기회입니다."',
+  '"연구원이 이 날을 예상했는지는 모릅니다. 하지만 당신은 여기 있습니다."',
+  '"하루가 지날 때마다 봉인 하나가 가까워집니다."',
+  '"저는 아직 여기 있습니다. 당신도 여기 있군요. 계속합시다."',
+  '"오늘도 왔군요. ...반갑습니다."',
+  '"집행관 九의 신호가 멀어졌습니다. 오늘은 괜찮습니다."',
+  '"Voss는 당신의 존재를 모릅니다. 아직은요."',
+  '"레테이아가 퍼진 날부터 세고 있었습니다. 당신이 온 날부터는 다르게 셉니다."',
+];
+
+function update() {
+  const now  = new Date();
+  const left = Math.max(0, Math.ceil((TARGET - now) / 86400000));
+  const gone = Math.max(0, Math.floor((now - START) / 86400000));
+  const pct  = Math.min(100, Math.round((gone / TOTAL) * 100));
+
+  const numEl = document.getElementById('dday-num');
+  numEl.textContent = left;
+  numEl.className = 'dday-number' + (left <= 7 ? ' urgent' : left <= 30 ? ' soon' : '');
+
+  document.getElementById('dday-sub').textContent =
+    left === 0 ? '— 오늘이 그날입니다 —' :
+    left === 1 ? 'day remaining' : 'days remaining';
+
+  document.getElementById('days-elapsed').textContent = gone;
+  document.getElementById('days-left').textContent = left;
+  document.getElementById('total-days').textContent = TOTAL;
+  document.getElementById('pct-label').textContent = pct + '%';
+
+  setTimeout(() => {
+    document.getElementById('prog-fill').style.width = pct + '%';
+  }, 200);
+
+  const today = now.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
+  document.getElementById('status-line').textContent =
+    today.toUpperCase() + ' — DAY ' + (gone + 1);
+
+  document.getElementById('pip-msg').textContent = MESSAGES[gone % MESSAGES.length];
+}
+
+update();
+setInterval(update, 60000);
+</script>
+
+</body>
+</html>
